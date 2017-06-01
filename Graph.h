@@ -2,7 +2,9 @@
 #include <cstdlib>
 #include "Shape.h"
 #include <unordered_map>
+#include <map>
 #include <vector>
+#include <climits>
 #ifndef GRAPH_H
 #define GRAPH_H
 using namespace std;
@@ -13,10 +15,12 @@ class Window;
 class Graph {
 public:
    Graph(unsigned a, unsigned b, unsigned o) ;
-   unsigned addShape(const string&);
+   unsigned addShape(const string& str);
+   void DFScoloring();
+   void colorBalance();
 private:
    // Helper functions:
-   unsigned connect(Shape*);
+   unsigned connect(Shape* s);
    size_t insert(Shape*);
    // Member variables:
    ShapeTable                       _leftBound;
@@ -36,15 +40,16 @@ private:
 class Component {
 public:
 private:
+   int                              _colorDiff;
    vector<Shape*>                   _shape;
    vector<Edge*>                    _edge;
 };
 
 class Edge {
 public:
-   Edge(const Shape*, const Shape*);
+   Edge(Shape*, Shape*);
+   bool operator< (const Edge& e) const;
 private:
-   Shape*                           _s1;
-   Shape*                           _s2;
+   Shape*                           _s[2];
 };
-#define GRAPH_H
+#endif
