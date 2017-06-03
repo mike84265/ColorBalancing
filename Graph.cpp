@@ -1,20 +1,36 @@
 #include "Graph.h"
-Graph::Graph(unsigned a, unsigned b, unsigned o)
-{
-   // 1. Initialize the given alpha, beta, omega
-   // 2. Initialize the multimap. (functional object should be passed to the map)
-}
-
-unsigned Graph::addShape(const string& str)
+int Graph::read(const char* filename)
 {
    // Input Argument:
-   //    str: A line containing the 4 coordinates of the shape.
+   //    filename: The name of the input file.
    // Return value:
-   //    Number of edges connected.
+   //    Number of shapes read in. Return negative if errors happen.
    // Specification:
    //    1. Parse the line to get four bounds of the shape
    //    2. Call connect() to connect the current read shape with the others in the graph
    //    3. Insert the shape to bound list.
+
+   FILE* fin = fopen(filename, "r");
+   if (fin == NULL)
+      return -1;
+   fscanf(fin,"ALPHA=%u\n",&_alpha);
+   fscanf(fin,"BETA=%u\n",&_beta);
+   fscanf(fin,"OMEGA=%u\n",&_omega);
+
+   int x1,y1,x2,y2;
+   unsigned id = 1;
+   while (fscanf(fin,"%d,%d,%d,%d\n",&x1, &y1, &x2, &y2) == 4) {
+      Shape* s = new Shape(id,x1,x2,y1,y2);
+      ++id;
+      connect(s);
+      _shape.push_back(s);
+      _leftBound.insert(pair<int,Shape*>(x1,s));
+      _rightBound.insert(pair<int,Shape*>(x2,s));
+      _upperBound.insert(pair<int,Shape*>(y1,s));
+      _lowerBound.insert(pair<int,Shape*>(y2,s));
+   }
+   fclose(fin);
+   return id-1;
 }
 
 void Graph::DFScoloring()
@@ -33,12 +49,13 @@ unsigned Graph::connect(Shape* s)
 {
    // Input Argument:
    //    s: The shape that should be connected to the others in the graph
-   // Return value:
+   // Return Value:
    //    Number of shape connected
    // Specification:
    //    1. Compare vertical overlay
    //    2. Compare horizontal overlay
    //    3. Add to _edge if connection is established
+   return 0;
 }
 
 Edge::Edge(Shape* s1, Shape* s2)

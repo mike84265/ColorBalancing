@@ -36,16 +36,4 @@ private:
    vector<Shape*>    _neighbors;
 };
 
-struct Compare_Left {
-   bool operator() (const Shape*, const Shape*) const;
-};
-struct Compare_Right {
-   bool operator() (const Shape*, const Shape*) const;
-};
-struct Compare_Upper {
-   bool operator() (const Shape*, const Shape*) const;
-};
-struct Compare_Lower {
-   bool operator() (const Shape*, const Shape*) const;
-};
 #endif

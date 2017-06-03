@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cstdlib>
+#include <cstdio>
 #include "Shape.h"
 #include <unordered_map>
 #include <map>
@@ -14,14 +15,13 @@ class Component;
 class Window;
 class Graph {
 public:
-   Graph(unsigned a, unsigned b, unsigned o) ;
-   unsigned addShape(const string& str);
+   Graph() {}
+   int read(const char* filename);
    void DFScoloring();
    void colorBalance();
 private:
    // Helper functions:
    unsigned connect(Shape* s);
-   size_t insert(Shape*);
    // Member variables:
    ShapeTable                       _leftBound;
    ShapeTable                       _rightBound;

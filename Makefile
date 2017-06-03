@@ -5,14 +5,14 @@ main:
 	@make Shape.o
 	@make Graph.o
 	@echo "Merging object files ..."
-	@g++ $(CFLAGS) main.cpp Shape.o Graph.o -o ColorBalancing
+	@g++ $(CFLAGS) main.cpp Shape.o Graph.o -o DPT_balance_color
 
 %.o: %.cpp
 	echo "Compiling $< ..."
 	g++ $(CFLAGS) -c -o $@ $<
 
 run:
-	@./ColorBalancing || { echo "Program does not exist! Type \"make\" first!"; exit 1; }
+	@./DPT_balance_color || { echo "Program does not exist! Type \"make\" first!"; exit 1; }
 
 debug:
 	@echo "Compiling Shape.o ..."
@@ -28,4 +28,4 @@ ctags:
 	@ctags -R ./
 
 clean:
-	@rm -f *.o ColorBalancing
+	@rm -f *.o DPT_balance_color
