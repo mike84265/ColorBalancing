@@ -1,4 +1,7 @@
 #include "Graph.h"
+
+unsigned Graph::_globalref = 0;
+
 int Graph::read(const char* filename)
 {
    // Input Argument:
@@ -43,6 +46,18 @@ void Graph::DFScoloring()
    // Specification:
    //    1. Update _globalref
    //    2. Run DFS to rule out odd cycles and find connected components.
+   vector<Shape*>::iterator it = _shape.begin();
+   for(; it!=_shape.end(); it++){
+      bool violate = false;
+      _globalref = 1;
+      vector<Shape*> dfslist;
+      *it->dfstravel(_globalref, dfslist, violate);
+      if (!dfslist.empty()){
+         Component(dfslist) temp;
+         temp.coloring(violate);
+         _component.push_back(temp);
+      }
+   }
 }
 
 unsigned Graph::connect(Shape* s)
@@ -56,6 +71,17 @@ unsigned Graph::connect(Shape* s)
    //    2. Compare horizontal overlay
    //    3. Add to _edge if connection is established
    return 0;
+}
+
+void Component::coloring(bool violate){
+   if (violate){
+      vector<Shape*>::iterator it = _shape.begin();
+      for(; it!=_shape.end(); it++){
+         *it->nocolor();
+      }
+   }
+   else
+      _shape[0]->docolor(1);
 }
 
 Edge::Edge(Shape* s1, Shape* s2)
@@ -74,3 +100,4 @@ bool Edge::operator< (const Edge& e) const
    else
       return this->_s[1]->id() < e._s[1]->id();
 }
+

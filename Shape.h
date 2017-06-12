@@ -21,9 +21,15 @@ public:
    int ylower() const { return _yl; }
    int yupper() const { return _yu; }
    unsigned id() const { return _id; }
+   unsigned ref() const { return _ref; }
    bool operator< (const Shape& s) { return this->_id < s._id; }
    Color color() const { return _color; }
    size_t connect(Shape* s);
+   void nocolor() { _color = UNCOLORABLE; }
+   void docolor(int) {};
+   void dfstravel(unsigned, vector<Shape*>&, bool&);
+   bool unvisited() {return _ref == 0;}
+   bool evenloop(unsigned r) { return (_ref-r)%2; }
    friend class Graph;
 private:
    unsigned          _id;
