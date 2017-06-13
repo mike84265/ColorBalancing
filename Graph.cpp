@@ -51,10 +51,10 @@ void Graph::DFScoloring()
       bool violate = false;
       _globalref = 1;
       vector<Shape*> dfslist;
-      *it->dfstravel(_globalref, dfslist, violate);
+      (*it)->dfstravel(_globalref, dfslist, violate);
       if (!dfslist.empty()){
-         Component(dfslist) temp;
-         temp.coloring(violate);
+         Component* temp = new Component(dfslist);
+         temp->coloring(violate);
          _component.push_back(temp);
       }
    }
@@ -80,7 +80,7 @@ unsigned Graph::connect(Shape* s)
    unsigned int _numofconnects = 0;
    for(;it_left!=_leftBound.end();it_left++)
    {
-     if(it_left->second!=s && s.yupper>it_left()->second.ylower() && it_left->second.yupper()>s.ylower() )
+     if(it_left->second!=s && s->yupper>it_left()->second.ylower() && it_left->second.yupper()>s->ylower() )
      {
       if(abs(s.xright()-it_left->first)<=_alpha)
       {
@@ -94,7 +94,7 @@ unsigned Graph::connect(Shape* s)
 
    for(;it_right!=_rightBound.end();it_right++)
    {
-     if(it_left->second!=s && s.yupper>it_right()->second.ylower() && it_right->second.yupper()>s.ylower())
+     if(it_left->second!=s && s->yupper>it_right()->second.ylower() && it_right->second.yupper()>s->ylower())
      {
        if(abs(s.xleft()-it_right->first)<=_alpha)
        {

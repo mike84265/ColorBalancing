@@ -26,7 +26,7 @@ public:
    Color color() const { return _color; }
    size_t connect(Shape* s);
    void nocolor() { _color = UNCOLORABLE; }
-   void docolor(int) {};
+   void docolor(int);
    void dfstravel(unsigned, vector<Shape*>&, bool&);
    bool unvisited() {return _ref == 0;}
    bool evenloop(unsigned r) { return (_ref-r)%2; }

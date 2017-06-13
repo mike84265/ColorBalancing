@@ -27,7 +27,7 @@ private:
    ShapeTable                       _rightBound;
    ShapeTable                       _lowerBound;
    ShapeTable                       _upperBound;
-   unsigned                         _globalref;
+   unsigned static                  _globalref;
    size_t                           _numShape;
    unsigned                         _alpha;
    unsigned                         _beta;
@@ -39,7 +39,7 @@ private:
 
 class Component {
 public:
-   Compoent(vector<Shape*> temp):_shape(temp){};
+   Component(vector<Shape*> temp):_shape(temp){};
    void coloring(bool){};
 private:
    int                              _colorDiff;
