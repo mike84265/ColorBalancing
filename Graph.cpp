@@ -39,7 +39,7 @@ int Graph::read(const char* filename)
 void Graph::DFScoloring()
 {
    // Arguments that should be used:
-   //    _shape 
+   //    _shape
    //    _globalref
    //    _leftBound, _rightBound, _lowerBound, _upperBound
    //    _component
@@ -70,7 +70,70 @@ unsigned Graph::connect(Shape* s)
    //    1. Compare vertical overlay
    //    2. Compare horizontal overlay
    //    3. Add to _edge if connection is established
-   return 0;
+   if(_leftBound.empty()){return 0;}
+
+   ShapeTable::iterator it_left = _leftBound.begin();
+   ShapeTable::iterator it_right = _rightBound.begin();
+   ShapeTable::iterator it_upper = _upperBound.begin();
+   ShapeTable::iterator it_lower = _lowerBound.begin();
+
+   unsigned int _numofconnects = 0;
+   for(;it_left!=_leftBound.end();it_left++)
+   {
+     if(it_left->second!=s && s.yupper>it_left()->second.ylower() && it_left->second.yupper()>s.ylower() )
+     {
+      if(abs(s.xright()-it_left->first)<=_alpha)
+      {
+        s.connect(it_left->second);
+        Edge* con(s,it_left->second);
+        _edge.push_back(con);
+        _numofconnects ++;
+      }
+     }
+   }
+
+   for(;it_right!=_rightBound.end();it_right++)
+   {
+     if(it_left->second!=s && s.yupper>it_right()->second.ylower() && it_right->second.yupper()>s.ylower())
+     {
+       if(abs(s.xleft()-it_right->first)<=_alpha)
+       {
+        s.connect(it_right->second);
+        Edge* con(s,it_right->second);
+        _edge.push_back(con);
+        _numofconnects++;
+        }
+     }
+   }
+
+   for(;it_upper!=_upperBound.end();it_upper++)
+   {
+     if(it_upper->second!=s && s.xright()>it_upper()->second.xleft() && it_upper->second.xright()>s.xleft())
+     {
+       if(abs(s.ylower()-it_upper->first)<=_beta)
+       {
+        s.connect(it_upper->second);
+        Edge* con(s,it_upper->second);
+        _edge.push_back(con);
+        _numofconnects++;
+       }
+     }
+   }
+
+   for(;it_lower!=_lowerBound.end();it_lower++)
+   {
+     if(it_lower->second!=s && s.xright()>it_lower()->second.xleft() && it_lower->second.xright()>s.xleft())
+     {
+       if((s.yupper()-it_lower->first)<=_beta)
+       {
+        s.connect(it_lower->second);
+        Edge* con(s,it_lower->second);
+        _edge.push_back(con);
+        _numofconnects++;
+        }
+     }
+   }
+   return _numofconnects;
 }
 
 void Component::coloring(bool violate){
