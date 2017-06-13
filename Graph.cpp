@@ -72,62 +72,69 @@ unsigned Graph::connect(Shape* s)
    //    3. Add to _edge if connection is established
    if(_leftBound.empty()){return 0;}
 
-   ShapeTable::iterator it_left = _leftBound.begin();
-   ShapeTable::iterator it_right = _rightBound.begin();
-   ShapeTable::iterator it_upper = _upperBound.begin();
-   ShapeTable::iterator it_lower = _lowerBound.begin();
+   ShapeTable::iterator it_left_l = _leftBound.lower_bound(s->xright());
+   ShapeTable::iterator it_left_u = _leftBound.upper_bound(s->xright()+_alpha);
+
+   ShapeTable::iterator it_right_l = _rightBound.lower_bound(s->xleft()-_alpha);
+   ShapeTable::iterator it_right_u = _rightBound.upper_bound(s->xleft());
+
+   ShapeTable::iterator it_upper_l = _upperBound.lower_bound(s->ylower()-_beta);
+   ShapeTable::iterator it_upper_u = _upperBound.upper_bound(s->ylower());
+
+   ShapeTable::iterator it_lower_l = _lowerBound.lower_bound(s->yupper());
+   ShapeTable::iterator it_lower_u = _lowerBound.upper_bound(s->yupper()+_beta);
 
    unsigned int _numofconnects = 0;
-   for(;it_left!=_leftBound.end();it_left++)
+   for(ShapeTable::iterator it = it_left_l;it!=it_left_u;it++)
    {
-     if(it_left->second!=s && s->yupper>it_left()->second.ylower() && it_left->second.yupper()>s->ylower() )
+     if(it->second!=s && s->yupper()>it->second->ylower() && it->second->yupper()>s->ylower())
      {
-      if(abs(s.xright()-it_left->first)<=_alpha)
+      if(abs(s->xright()-it->first)<=_alpha)
       {
-        s.connect(it_left->second);
-        Edge* con(s,it_left->second);
+        s->connect(it->second);
+        Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects ++;
       }
      }
    }
 
-   for(;it_right!=_rightBound.end();it_right++)
+   for(ShapeTable::iterator it = it_right_l;it!=it_right_u;it++)
    {
-     if(it_left->second!=s && s->yupper>it_right()->second.ylower() && it_right->second.yupper()>s->ylower())
+     if(it->second!=s && s->yupper()>it->second->ylower() && it->second->yupper()>s->ylower())
      {
-       if(abs(s.xleft()-it_right->first)<=_alpha)
+       if(abs(s->xleft()-it->first)<=_alpha)
        {
-        s.connect(it_right->second);
-        Edge* con(s,it_right->second);
+        s->connect(it->second);
+        Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects++;
         }
      }
    }
 
-   for(;it_upper!=_upperBound.end();it_upper++)
+   for(ShapeTable::iterator it=it_upper_l;it!=it_upper_u;it++)
    {
-     if(it_upper->second!=s && s.xright()>it_upper()->second.xleft() && it_upper->second.xright()>s.xleft())
+     if(it->second!=s && s->xright()>it->second->xleft() && it->second->xright()>s->xleft())
      {
-       if(abs(s.ylower()-it_upper->first)<=_beta)
+       if(abs(s->ylower()-it->first)<=_beta)
        {
-        s.connect(it_upper->second);
-        Edge* con(s,it_upper->second);
+        s->connect(it->second);
+        Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects++;
        }
      }
    }
 
-   for(;it_lower!=_lowerBound.end();it_lower++)
+   for(ShapeTable::iterator it=it_lower_l;it!=it_lower_u;it++)
    {
-     if(it_lower->second!=s && s.xright()>it_lower()->second.xleft() && it_lower->second.xright()>s.xleft())
+     if(it->second!=s && s->xright()>it->second->xleft() && it->second->xright()>s->xleft())
      {
-       if((s.yupper()-it_lower->first)<=_beta)
+       if((s->yupper()-it->first)<=_beta)
        {
-        s.connect(it_lower->second);
-        Edge* con(s,it_lower->second);
+        s->connect(it->second);
+        Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects++;
         }
@@ -140,7 +147,7 @@ void Component::coloring(bool violate){
    if (violate){
       vector<Shape*>::iterator it = _shape.begin();
       for(; it!=_shape.end(); it++){
-         *it->nocolor();
+         (*it)->nocolor();
       }
    }
    else
