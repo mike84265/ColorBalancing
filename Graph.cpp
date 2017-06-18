@@ -16,6 +16,7 @@ int Graph::read(const char* filename)
    FILE* fin = fopen(filename, "r");
    if (fin == NULL)
       return -1;
+
    fscanf(fin,"ALPHA=%u\n",&_alpha);
    fscanf(fin,"BETA=%u\n",&_beta);
    fscanf(fin,"OMEGA=%u\n",&_omega);
@@ -25,14 +26,20 @@ int Graph::read(const char* filename)
    while (fscanf(fin,"%d,%d,%d,%d\n",&x1, &y1, &x2, &y2) == 4) {
       Shape* s = new Shape(id,x1,x2,y1,y2);
       ++id;
-      connect(s);
+     // connect(s);
       _shape.push_back(s);
       _leftBound.insert(pair<int,Shape*>(x1,s));
       _rightBound.insert(pair<int,Shape*>(x2,s));
-      _upperBound.insert(pair<int,Shape*>(y1,s));
-      _lowerBound.insert(pair<int,Shape*>(y2,s));
+      _upperBound.insert(pair<int,Shape*>(y2,s));
+      _lowerBound.insert(pair<int,Shape*>(y1,s));
    }
+    for(int i=0;i<_shape.size();i++)
+    {
+      connect(_shape[i]);
+    }
+
    fclose(fin);
+
    return id-1;
 }
 
@@ -46,6 +53,7 @@ void Graph::DFScoloring()
    // Specification:
    //    1. Update _globalref
    //    2. Run DFS to rule out odd cycles and find connected components.
+
    vector<Shape*>::iterator it = _shape.begin();
    for(; it!=_shape.end(); it++){
       bool violate = false;
@@ -70,9 +78,10 @@ unsigned Graph::connect(Shape* s)
    //    1. Compare vertical overlay
    //    2. Compare horizontal overlay
    //    3. Add to _edge if connection is established
-   if(_leftBound.empty()){return 0;}
+  if(_leftBound.empty()){return 0;}
 
    ShapeTable::iterator it_left_l = _leftBound.lower_bound(s->xright());
+  // cout <<it_left_l->first<<endl;
    ShapeTable::iterator it_left_u = _leftBound.upper_bound(s->xright()+_alpha);
 
    ShapeTable::iterator it_right_l = _rightBound.lower_bound(s->xleft()-_alpha);
@@ -89,13 +98,13 @@ unsigned Graph::connect(Shape* s)
    {
      if(it->second!=s && s->yupper()>it->second->ylower() && it->second->yupper()>s->ylower())
      {
-      if(abs(s->xright()-it->first)<=_alpha)
-      {
+     // if(abs(s->xright()-it->first)<=_alpha)
+     // {
         s->connect(it->second);
         Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects ++;
-      }
+   //   }
      }
    }
 
@@ -103,13 +112,13 @@ unsigned Graph::connect(Shape* s)
    {
      if(it->second!=s && s->yupper()>it->second->ylower() && it->second->yupper()>s->ylower())
      {
-       if(abs(s->xleft()-it->first)<=_alpha)
-       {
+      // if(abs(s->xleft()-it->first)<=_alpha)
+      // {
         s->connect(it->second);
         Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects++;
-        }
+       // }
      }
    }
 
@@ -117,13 +126,13 @@ unsigned Graph::connect(Shape* s)
    {
      if(it->second!=s && s->xright()>it->second->xleft() && it->second->xright()>s->xleft())
      {
-       if(abs(s->ylower()-it->first)<=_beta)
-       {
+     //  if(abs(s->ylower()-it->first)<=_beta)
+    //   {
         s->connect(it->second);
         Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects++;
-       }
+      // }
      }
    }
 
@@ -131,13 +140,13 @@ unsigned Graph::connect(Shape* s)
    {
      if(it->second!=s && s->xright()>it->second->xleft() && it->second->xright()>s->xleft())
      {
-       if((s->yupper()-it->first)<=_beta)
-       {
+    //   if((s->yupper()-it->first)<=_beta)
+     //  {
         s->connect(it->second);
         Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects++;
-        }
+       // }
      }
    }
    return _numofconnects;
