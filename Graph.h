@@ -40,7 +40,7 @@ private:
 class Component {
 public:
    Component(vector<Shape*> temp):_shape(temp){};
-   void coloring(bool){};
+   void coloring(bool);
 private:
    int                              _colorDiff;
    vector<Shape*>                   _shape;

@@ -8,19 +8,19 @@ main:
 	@g++ $(CFLAGS) main.cpp Shape.o Graph.o -o DPT_balance_color
 
 %.o: %.cpp
-	echo "Compiling $< ..."
-	g++ $(CFLAGS) -c -o $@ $<
+	@echo "Compiling $< ..."
+	@g++ $(CFLAGS) -c -o $@ $<
 
 run:
 	@./DPT_balance_color || { echo "Program does not exist! Type \"make\" first!"; exit 1; }
 
 debug:
 	@echo "Compiling Shape.o ..."
-	g++ $(CFLAGS_DBG) -c -o Shape.o Shape.cpp
+	@g++ $(CFLAGS_DBG) -c -o Shape.o Shape.cpp
 	@echo "Compiling Graph.o ..."
-	g++ $(CFLAGS_DBG) -c -o Graph.o Graph.cpp
+	@g++ $(CFLAGS_DBG) -c -o Graph.o Graph.cpp
 	@echo "Merging object files ..."
-	g++ $(CFLAGS_DBG) main.cpp Shape.o Graph.o -o ColorBalancing
+	@g++ $(CFLAGS_DBG) main.cpp Shape.o Graph.o -o ColorBalancing
 
 
 ctags:
