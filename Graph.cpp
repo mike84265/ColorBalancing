@@ -243,8 +243,8 @@ void Graph::PrintOut(const char* filename)
       int left=-1,right=-1,lower=-1,upper=-1;
       _window[j]->calculateDiff();
 
-      double redratio=(_window[j]->getArea(RED)*100)/(_omega*_omega);
-      double blueratio=(_window[j]->getArea(BLUE)*100)/(_omega*_omega);
+      double redratio=(double)(_window[j]->getArea(RED)*100)/(_omega*_omega);
+      double blueratio=(double)(_window[j]->getArea(BLUE)*100)/(_omega*_omega);
       _window[j]->getSides(left,right,lower,upper);
       fprintf(f,"WIN[%d]=%d,%d,%d,%d(%.2f %.2f)\n",j+1,left,lower,right,upper,redratio,blueratio);
    }
