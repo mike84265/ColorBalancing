@@ -1,7 +1,18 @@
 #include "Graph.h"
-#include "fstream"
+#include <fstream>
 
 unsigned Graph::_globalref = 0;
+
+Graph::~Graph()
+{
+   size_t i,n;
+   for (i=0,n=_shape.size();i<n;++i)
+      delete _shape[i];
+   for (i=0,n=_component.size();i<n;++i)
+      delete _component[i];
+   for (i=0,n=_window.size();i<n;++i)
+      delete _window[i];
+}
 
 int Graph::read(const char* filename)
 {
@@ -225,20 +236,20 @@ unsigned Graph::connect(Shape* s)
 
 void Graph::PrintOut(const char* filename)
 {
-  ofstream file;
-  file.open(filename,ios::trunc|ios::out);
-  for(int j=0;j<_window.size();j++)
-  {
-   int left=-1,right=-1,lower=-1,upper=-1;
-   _window[j]->getSides(left,right,lower,upper);
-   file << "WIN[" << j+1 <<"]=" ;
-   file << left <<','<< lower <<','<< right <<','<< upper <<'('<< 1.11<<' '<< 1.11<<')'<<endl;
-  }
-  file.close();
-  for(int i=0;i<_component.size();i++)
-  {
-   _component[i]->printGroup(filename);
-  }
+   ofstream file;
+   file.open(filename,ios::trunc|ios::out);
+   for(int j=0;j<_window.size();j++)
+   {
+      int left=-1,right=-1,lower=-1,upper=-1;
+      _window[j]->getSides(left,right,lower,upper);
+      file << "WIN[" << j+1 <<"]=" ;
+      file << left <<','<< lower <<','<< right <<','<< upper <<'('<< 1.11<<' '<< 1.11<<')'<<endl;
+   }
+   file.close();
+   for(int i=0;i<_component.size();i++)
+   {
+      _component[i]->printGroup(filename);
+   }
 }
 
 void Graph::colorBalance()
@@ -259,6 +270,7 @@ Component::Component(vector<Shape*> temp) :
 {
    size_t n = _shape.size();
    for (size_t i=0;i<n;++i) {
+      _shape[i]->setComponent(this);
       if (_shape[i]->xleft() < _xl)
          _xl = _shape[i]->xleft();
       if (_shape[i]->xright() > _xr)
@@ -291,37 +303,37 @@ void Component::inverse()
 }
 void Component::printGroup(const char* filename)
 {
-  ofstream ret;
-  ret.open(filename,ios::out|ios::app);
-  ret << "GROUP" <<endl;
-  int a_order=1;
-  int b_order=1;
-  int c_order=1;
-  for(int i=_shape.size()-1;i>-1;i--)
-  {
-    if(_shape[i]->color()==3)
-    {
-     ret << "NO[" << c_order << "]=" << _shape[i]->xleft()<<','<<_shape[i]->ylower()<<','
-                                <<_shape[i]->xright()<<','<<_shape[i]->yupper()<<endl;
-     c_order++;
-    }
-    if(_shape[i]->color()==1)
-    {
-     ret << "CA[" << a_order << "]=" << _shape[i]->xleft()<<','<<_shape[i]->ylower()<<','
-                                <<_shape[i]->xright()<<','<<_shape[i]->yupper()<<endl;
-     a_order++;
-    }
-  }
-  for(int j=_shape.size()-1;j>-1;j--)
-  {
-    if(_shape[j]->color()==2)
-    {
-     ret << "CB[" << b_order << "]=" << _shape[j]->xleft()<<','<<_shape[j]->ylower()<<','
-                                <<_shape[j]->xright()<<','<<_shape[j]->yupper()<<endl;
-      b_order++;
-    }
-  }
-  ret.close();
+   ofstream ret;
+   ret.open(filename,ios::out|ios::app);
+   ret << "GROUP" <<endl;
+   int a_order=1;
+   int b_order=1;
+   int c_order=1;
+   for(int i=_shape.size()-1;i>-1;i--)
+   {
+      if(_shape[i]->color()==3)
+      {
+         ret << "NO[" << c_order << "]=" << _shape[i]->xleft()<<','<<_shape[i]->ylower()<<','
+                                    <<_shape[i]->xright()<<','<<_shape[i]->yupper()<<endl;
+         c_order++;
+      }
+      if(_shape[i]->color()==1)
+      {
+         ret << "CA[" << a_order << "]=" << _shape[i]->xleft()<<','<<_shape[i]->ylower()<<','
+                                    <<_shape[i]->xright()<<','<<_shape[i]->yupper()<<endl;
+         a_order++;
+      }
+   }
+   for(int j=_shape.size()-1;j>-1;j--)
+   {
+     if(_shape[j]->color()==2)
+     {
+        ret << "CB[" << b_order << "]=" << _shape[j]->xleft()<<','<<_shape[j]->ylower()<<','
+                                   <<_shape[j]->xright()<<','<<_shape[j]->yupper()<<endl;
+        b_order++;
+     }
+   }
+   ret.close();
 }
 bool Component::colorable()
 {
@@ -420,5 +432,22 @@ int Window::calculateDiff()
 
 void Window::adjust()
 {
-
+   size_t n = _shape.size();
+   map<Component*,int> componentArea;
+   for (size_t i=0;i<n;++i) {
+      int sign = (_shape[i]->color() == RED)? -1 : 1;
+      componentArea[_shape[i]->getComp()] += (sign * _area[i]);
+   }
+   map<Component*,int>::iterator it;
+   Component* bestSol = NULL;
+   int bestArea = 0;
+   for (it=componentArea.begin(); it!=componentArea.end(); ++it) {
+      if (abs(it->second + _colorDiff) < abs(bestArea + _colorDiff)) { 
+         bestArea = it->second;
+         bestSol = it->first;
+      }
+   }
+   if (bestSol != NULL)
+      bestSol->inverse();
+   _adjusted = true;
 }

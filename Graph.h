@@ -32,7 +32,6 @@ private:
    ShapeTable                       _lowerBound;
    ShapeTable                       _upperBound;
    unsigned static                  _globalref;
-   size_t                           _numShape;
    unsigned                         _alpha;
    unsigned                         _beta;
    unsigned                         _omega;
@@ -79,7 +78,7 @@ public:
    void refreshShape();
    void adjust();
    bool adjusted() const { return _adjusted; }
-   void getSides(int& a,int& b,int& c,int& d){a=_xl;b=_xr;c=_yl;d=_yu;}
+   void getSides(int& a,int& b,int& c,int& d){ a=_xl;b=_xr;c=_yl;d=_yu; }
 private:
    vector<Component*>               _component;
    vector<Shape*>                   _shape;

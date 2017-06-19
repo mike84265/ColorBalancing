@@ -13,6 +13,7 @@ enum Color {
 };
 
 class Graph;
+class Component;
 class Shape {
 public:
    Shape(unsigned id, int x1, int x2, int y1, int y2);
@@ -28,10 +29,12 @@ public:
    void nocolor() { _color = UNCOLORABLE; }
    void docolor(int);
    void dfstravel(unsigned, vector<Shape*>&, bool&);
-   bool unvisited() {return _ref == 0;}
-   bool evenloop(unsigned r) { return (_ref-r)%2; }
+   bool unvisited() const { return _ref == 0; }
+   bool evenloop(unsigned r) const { return (_ref-r)%2; }
    Color inverse();
-   int overlapArea(int xl, int yl, int xr, int yu);
+   int overlapArea(int xl, int yl, int xr, int yu) const;
+   void setComponent(Component* comp) { _comp = comp; }
+   Component* getComp() const { return _comp; }
    friend class Graph;
 private:
    unsigned          _id;
@@ -41,6 +44,7 @@ private:
    int               _yu;
    unsigned          _ref;
    Color             _color;
+   Component*        _comp;
    vector<Shape*>    _neighbors;
 };
 

@@ -1,6 +1,6 @@
 #include "Shape.h"
 Shape::Shape(unsigned id, int x1, int x2, int y1, int y2)
-   : _id(id), _xl(x1), _xr(x2), _yl(y1), _yu(y2), _ref(0), _color(UNCOLORED)
+   : _id(id), _xl(x1), _xr(x2), _yl(y1), _yu(y2), _ref(0), _color(UNCOLORED), _comp(NULL)
 {}
 size_t Shape::connect(Shape* s)
 {
@@ -53,7 +53,7 @@ Color Shape::inverse()
    return _color;
 }
 
-int Shape::overlapArea(int xl, int yl, int xr, int yu)
+int Shape::overlapArea(int xl, int yl, int xr, int yu) const
 {
    int xmin, xmax, ymin, ymax;
    xmin = (xl < this->_xl)? this->_xl : xl;
