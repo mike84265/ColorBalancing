@@ -1,6 +1,6 @@
 #include "Graph.h"
 #include <fstream>
-
+#include "iomanip"
 unsigned Graph::_globalref = 0;
 
 Graph::~Graph()
@@ -238,9 +238,14 @@ void Graph::PrintOut(const char* filename)
    FILE* f = fopen(filename,"w");
    for(int j=0;j<_window.size();j++)
    {
+
       int left=-1,right=-1,lower=-1,upper=-1;
+      _window[j]->calculateDiff();
+
+      double redratio=(_window[j]->getArea(RED)*100)/(_omega*_omega);
+      double blueratio=(_window[j]->getArea(BLUE)*100)/(_omega*_omega);
       _window[j]->getSides(left,right,lower,upper);
-      fprintf(f,"WIN[%d]=%d,%d,%d,%d(1.11 1.11)\n",j+1,left,lower,right,upper);
+      fprintf(f,"WIN[%d]=%d,%d,%d,%d(%d %d)/n",j+1,left,lower,right,upper,redratio,blueratio);
    }
    for(int i=0;i<_component.size();i++)
       _component[i]->printGroup(f);
@@ -306,15 +311,15 @@ void Component::printGroup(FILE* file)
    for (int i=_shape.size()-1;i>-1;--i) {
       switch(_shape[i]->color()) {
        case UNCOLORABLE:
-         fprintf(file, "NO[%d]=%d,%d,%d,%d\n", c_order++, _shape[i]->xleft(), _shape[i]->ylower(), 
+         fprintf(file, "NO[%d]=%d,%d,%d,%d\n", c_order++, _shape[i]->xleft(), _shape[i]->ylower(),
             _shape[i]->xright(), _shape[i]->yupper());
          break;
        case RED:
-         fprintf(file, "CA[%d]=%d,%d,%d,%d\n", a_order++, _shape[i]->xleft(), _shape[i]->ylower(), 
+         fprintf(file, "CA[%d]=%d,%d,%d,%d\n", a_order++, _shape[i]->xleft(), _shape[i]->ylower(),
             _shape[i]->xright(), _shape[i]->yupper());
          break;
        case BLUE:
-         fprintf(file, "CB[%d]=%d,%d,%d,%d\n", b_order++, _shape[i]->xleft(), _shape[i]->ylower(), 
+         fprintf(file, "CB[%d]=%d,%d,%d,%d\n", b_order++, _shape[i]->xleft(), _shape[i]->ylower(),
             _shape[i]->xright(), _shape[i]->yupper());
          break;
        default:
@@ -414,7 +419,18 @@ int Window::calculateDiff()
       }
    }
    _colorDiff = BlueArea - RedArea;
+   _bluearea = BlueArea;
+   _redarea = RedArea;
    return _colorDiff;
+}
+
+int Window::getArea(int index){
+    if(index==1)
+      return _redarea;
+    if(index==2)
+      return _bluearea;
+    else
+      return 0;
 }
 
 void Window::adjust()
@@ -430,7 +446,7 @@ void Window::adjust()
    Component* bestSol = NULL;
    int bestArea = 0;
    for (it=componentArea.begin(); it!=componentArea.end(); ++it) {
-      if (abs(it->second + _colorDiff) < abs(bestArea + _colorDiff)) { 
+      if (abs(it->second + _colorDiff) < abs(bestArea + _colorDiff)) {
          bestArea = it->second;
          bestSol = it->first;
       }
