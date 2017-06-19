@@ -133,8 +133,10 @@ void Graph::separate()
          }
       }
    }
-   for (size_t i=0;i<numWindow;++i)
+   for (size_t i=0;i<numWindow;++i) {
       _window[i]->refreshShape();
+      _window[i]->calculateDiff();
+   }
 }
 
 void Graph::DFScoloring()
@@ -257,6 +259,9 @@ void Graph::colorBalance()
    size_t numWindow = _window.size();
    int maxWinId, maxWinDiff=0;
    for (size_t i=0;i<numWindow;++i) {
+      #if DEBUG==1
+      printf("window[%d] colorDiff = %d\n", i, _window[i]->colorDiff());
+      #endif
       if (abs(_window[i]->colorDiff()) > maxWinDiff && !_window[i]->adjusted()) {
          maxWinId = i;
          maxWinDiff = abs(_window[i]->colorDiff());
@@ -445,9 +450,18 @@ void Window::adjust()
       componentArea[_shape[i]->getComp()] += (sign * _area[i]);
    }
    Component* bestSol = NULL;
+   #if DEBUG==1
+   printf("componentArea.size() = %zu\n",componentArea.size());
+   #endif
    int bestArea = 0;
    for (it=componentArea.begin(); it!=componentArea.end(); ++it) {
-      if (abs(it->second + _colorDiff) < abs(bestArea + _colorDiff)) {
+      #if DEBUG==1
+      printf("_colorDiff = %d, area = %d\n", _colorDiff, it->second);
+      #endif
+      if (abs(_colorDiff - it->second * 2) < abs(_colorDiff - bestArea * 2)) {
+         #if DEBUG==1
+         printf("bestArea is replaced by %d\n", it->second);
+         #endif
          bestArea = it->second;
          bestSol = it->first;
       }
