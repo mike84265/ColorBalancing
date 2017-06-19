@@ -1,0 +1,12 @@
+Problem Description:
+http://cad-contest.el.cycu.edu.tw/problem_E/default.htm
+
+Usage:
+# Compile the program
+make
+# Execute the program
+./DPT_balance_color ($input_filename) ($input_filename).out
+
+Appendix:
+'make debug' can build a debug version of the program
+'make ctags' builds tags for all src files
