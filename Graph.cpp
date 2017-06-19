@@ -245,7 +245,7 @@ void Graph::PrintOut(const char* filename)
       double redratio=(_window[j]->getArea(RED)*100)/(_omega*_omega);
       double blueratio=(_window[j]->getArea(BLUE)*100)/(_omega*_omega);
       _window[j]->getSides(left,right,lower,upper);
-      fprintf(f,"WIN[%d]=%d,%d,%d,%d(%d %d)/n",j+1,left,lower,right,upper,redratio,blueratio);
+      fprintf(f,"WIN[%d]=%d,%d,%d,%d(%.2f %.2f)\n",j+1,left,lower,right,upper,redratio,blueratio);
    }
    for(int i=0;i<_component.size();i++)
       _component[i]->printGroup(f);
@@ -363,7 +363,8 @@ bool Edge::operator< (const Edge& e) const
 }
 
 Window::Window(unsigned id, int xl, int yl, int xr, int yu) :
-   _id(id), _xl(xl), _xr(xr), _yl(yl), _yu(yu), _colorDiff(INT_MIN), _adjusted(false)
+   _id(id), _xl(xl), _xr(xr), _yl(yl), _yu(yu),
+   _colorDiff(INT_MIN), _adjusted(false), _redarea(0), _bluearea(0)
 {}
 
 bool Window::overlap(int xl, int yl, int xr, int yu)

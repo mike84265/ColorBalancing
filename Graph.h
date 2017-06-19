@@ -79,6 +79,7 @@ public:
    void adjust();
    bool adjusted() const { return _adjusted; }
    void getSides(int& a,int& b,int& c,int& d){ a=_xl;b=_xr;c=_yl;d=_yu; }
+   int getArea(int index);
 private:
    vector<Component*>               _component;
    vector<Shape*>                   _shape;
@@ -89,6 +90,8 @@ private:
    int                              _yl;
    int                              _yu;
    int                              _colorDiff;
+   int                              _redarea;
+   int                              _bluearea;
    bool                             _adjusted;
 };
 #endif
