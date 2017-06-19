@@ -35,6 +35,7 @@ int main(int argc, char** argv)
    g->read(argv[1]);
    g->DFScoloring();
    g->separate();
+   g->colorBalance();
    g->PrintOut(argv[2]);
    return 0;
 }

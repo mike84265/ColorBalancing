@@ -257,7 +257,8 @@ void Graph::colorBalance()
          maxWinDiff = abs(_window[i]->colorDiff());
       }
    }
-   _window[maxWinId]->adjust();
+   if (maxWinDiff != 0)
+      _window[maxWinId]->adjust();
 }
 
 Component::Component(vector<Shape*> temp) :
@@ -299,16 +300,10 @@ void Component::inverse()
 void Component::printGroup(FILE* file)
 {
    fprintf(file,"GROUP\n");
-   #if DEBUG==1
-   fprintf(file,"size = %zu\n", _shape.size());
-   #endif
    int a_order=1;
    int b_order=1;
    int c_order=1;
    for (int i=_shape.size()-1;i>-1;--i) {
-      #if DEBUG==1
-      fprintf(file, "_shape[%d] = %d\n", i, _shape[i]->color());
-      #endif
       switch(_shape[i]->color()) {
        case UNCOLORABLE:
          fprintf(file, "NO[%d]=%d,%d,%d,%d\n", c_order++, _shape[i]->xleft(), _shape[i]->ylower(), 
@@ -426,11 +421,12 @@ void Window::adjust()
 {
    size_t n = _shape.size();
    map<Component*,int> componentArea;
+   map<Component*,int>::iterator it;
    for (size_t i=0;i<n;++i) {
       int sign = (_shape[i]->color() == RED)? -1 : 1;
+      assert(_shape[i]->getComp() != NULL);
       componentArea[_shape[i]->getComp()] += (sign * _area[i]);
    }
-   map<Component*,int>::iterator it;
    Component* bestSol = NULL;
    int bestArea = 0;
    for (it=componentArea.begin(); it!=componentArea.end(); ++it) {
