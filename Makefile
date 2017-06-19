@@ -20,7 +20,7 @@ debug:
 	@echo "Compiling Graph.o ..."
 	@g++ $(CFLAGS_DBG) -c -o Graph.o Graph.cpp
 	@echo "Merging object files ..."
-	@g++ $(CFLAGS_DBG) main.cpp Shape.o Graph.o -o ColorBalancing
+	@g++ $(CFLAGS_DBG) main.cpp Shape.o Graph.o -o DPT_balance_color 
 
 
 ctags:

@@ -240,7 +240,7 @@ void Graph::PrintOut(const char* filename)
    {
       int left=-1,right=-1,lower=-1,upper=-1;
       _window[j]->getSides(left,right,lower,upper);
-      fprintf(f,"WIN[%d]=%d,%d,%d,%d(1.11 1.11)",j+1,left,lower,right,upper);
+      fprintf(f,"WIN[%d]=%d,%d,%d,%d(1.11 1.11)\n",j+1,left,lower,right,upper);
    }
    for(int i=0;i<_component.size();i++)
       _component[i]->printGroup(f);
@@ -299,10 +299,16 @@ void Component::inverse()
 void Component::printGroup(FILE* file)
 {
    fprintf(file,"GROUP\n");
+   #if DEBUG==1
+   fprintf(file,"size = %zu\n", _shape.size());
+   #endif
    int a_order=1;
    int b_order=1;
    int c_order=1;
-   for (size_t i=_shape.size()-1;i>-1;--i) {
+   for (int i=_shape.size()-1;i>-1;--i) {
+      #if DEBUG==1
+      fprintf(file, "_shape[%d] = %d\n", i, _shape[i]->color());
+      #endif
       switch(_shape[i]->color()) {
        case UNCOLORABLE:
          fprintf(file, "NO[%d]=%d,%d,%d,%d\n", c_order++, _shape[i]->xleft(), _shape[i]->ylower(), 
