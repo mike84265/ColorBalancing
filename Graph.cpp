@@ -240,7 +240,7 @@ void Graph::PrintOut(const char* filename)
    {
       int left=-1,right=-1,lower=-1,upper=-1;
       _window[j]->getSides(left,right,lower,upper);
-      fprintf(f,"WIN[%d]=%d,%d,%d,%d(1.11 1.11)",j+1,left,lower,right,upper);
+      fprintf(f,"WIN[%d]=%d,%d,%d,%d(1.11 1.11)\n",j+1,left,lower,right,upper);
    }
    for(int i=0;i<_component.size();i++)
       _component[i]->printGroup(f);
