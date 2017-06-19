@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <climits>
+#include <cassert>
 #ifndef GRAPH_H
 #define GRAPH_H
 using namespace std;
@@ -16,9 +17,12 @@ class Window;
 class Graph {
 public:
    Graph() {}
+   ~Graph();
    int read(const char* filename);
    void DFScoloring();
    void colorBalance();
+   void separate();
+   void PrintOut(const char* filename);
 private:
    // Helper functions:
    unsigned connect(Shape* s);
@@ -35,16 +39,26 @@ private:
    vector<Shape*>                   _shape;
    vector<Edge*>                    _edge;
    vector<Component*>               _component;
+   vector<Window*>                  _window;
 };
 
 class Component {
 public:
-   Component(vector<Shape*> temp):_shape(temp){};
+   Component(vector<Shape*> temp);
    void coloring(bool);
+   void inverse();
+   bool colorable();
+   void range(int& xl, int& yl, int& xr, int& yu);
+   void pushWindow(Window* window);
+   friend class Window;
+   void printGroup(const char* filename);
 private:
-   int                              _colorDiff;
    vector<Shape*>                   _shape;
-   vector<Edge*>                    _edge;
+   vector<Window*>                  _window;
+   int                              _xl;
+   int                              _xr;
+   int                              _yl;
+   int                              _yu;
 };
 
 class Edge {
@@ -53,5 +67,29 @@ public:
    bool operator< (const Edge& e) const;
 private:
    Shape*                           _s[2];
+};
+
+class Window {
+public:
+   Window(unsigned id, int xl, int yd, int xr, int yu);
+   int colorDiff() const { return _colorDiff; }
+   bool overlap(int xl, int yl, int xr, int yu);
+   void pushComponent(Component* comp);
+   int calculateDiff();
+   void refreshShape();
+   void adjust();
+   bool adjusted() const { return _adjusted; }
+   void getSides(int& a,int& b,int& c,int& d){a=_xl;b=_xr;c=_yl;d=_yu;}
+private:
+   vector<Component*>               _component;
+   vector<Shape*>                   _shape;
+   vector<int>                      _area;
+   unsigned                         _id;
+   int                              _xl;
+   int                              _xr;
+   int                              _yl;
+   int                              _yu;
+   int                              _colorDiff;
+   bool                             _adjusted;
 };
 #endif

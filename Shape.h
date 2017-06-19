@@ -30,6 +30,8 @@ public:
    void dfstravel(unsigned, vector<Shape*>&, bool&);
    bool unvisited() {return _ref == 0;}
    bool evenloop(unsigned r) { return (_ref-r)%2; }
+   Color inverse();
+   int overlapArea(int xl, int yl, int xr, int yu);
    friend class Graph;
 private:
    unsigned          _id;

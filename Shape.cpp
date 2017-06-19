@@ -43,3 +43,25 @@ void Shape::docolor(int i) {
    else
       return;
 }
+
+Color Shape::inverse()
+{
+   if (_color == RED)
+      _color = BLUE;
+   else if (_color == BLUE)
+      _color = RED;
+   return _color;
+}
+
+int Shape::overlapArea(int xl, int yl, int xr, int yu)
+{
+   int xmin, xmax, ymin, ymax;
+   xmin = (xl < this->_xl)? this->_xl : xl;
+   xmax = (xr > this->_xr)? this->_xr : xr;
+   ymin = (yl < this->_yl)? this->_yl : yl;
+   ymax = (yu > this->_yu)? this->_yu : yu;
+   if (xmin > xmax || ymin > ymax)
+      return 0;
+   else
+      return (xmax-xmin) * (ymax-ymin);
+}

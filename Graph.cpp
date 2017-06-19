@@ -1,4 +1,5 @@
 #include "Graph.h"
+#include "fstream"
 
 unsigned Graph::_globalref = 0;
 
@@ -33,14 +34,97 @@ int Graph::read(const char* filename)
       _upperBound.insert(pair<int,Shape*>(y2,s));
       _lowerBound.insert(pair<int,Shape*>(y1,s));
    }
-    for(int i=0;i<_shape.size();i++)
-    {
+   for(int i=0;i<_shape.size();i++)
       connect(_shape[i]);
-    }
 
    fclose(fin);
 
    return id-1;
+}
+
+void Graph::separate()
+{
+   int upmost=0;
+   ShapeTable::iterator it1 = _upperBound.end();
+   it1--;
+   for(ShapeTable::iterator it=it1;it!=_upperBound.begin();it--)
+   {
+     if(it->second->color()!=3)
+     {
+      upmost = it->first;
+      break;
+     }
+   }
+   int lowmost=0;
+   ShapeTable::iterator it2 = _lowerBound.begin();
+   for(ShapeTable::iterator it=it2;it!=_lowerBound.end();it++)
+   {
+     if(it->second->color()!=3)
+     {
+      lowmost = it->first;
+       break;
+     }
+   }
+   int leftmost=0;
+   ShapeTable::iterator it3 = _leftBound.begin();
+   for(ShapeTable::iterator it=it3;it!=_leftBound.end();it++)
+   {
+     if(it->second->color()!=3)
+     {
+      leftmost = it->first;
+       break;
+     }
+   }
+   int rightmost=0;
+   ShapeTable::iterator it4 = _rightBound.end();
+   it4--;
+   for(ShapeTable::iterator it=it4;it!=_rightBound.begin();it--)
+   {
+     if(it->second->color()!=3)
+     {
+      rightmost = it->first;
+       break;
+     }
+   }
+
+   int height = (upmost-lowmost)/_omega
+                + bool((upmost-lowmost)%_omega);
+   int width = (rightmost-leftmost)/_omega
+                + bool((rightmost-leftmost)%_omega);
+
+
+   for(int i =0; i<height; i++){
+      for(int j=0; j<width; j++){
+       Window* temp;
+         if(i==height-1)
+         {
+            if (j==width-1)
+             temp = new Window(i*width+j, rightmost-_omega, upmost-_omega, rightmost, upmost);
+            else
+             temp = new Window(i*width+j, leftmost+j*_omega, upmost-_omega, leftmost+(j+1)*_omega, upmost);
+         }
+         else if (j==width-1)
+           temp = new Window(i*width+j, rightmost-_omega, lowmost+i*_omega, rightmost, lowmost+(i+1)*_omega);
+         else
+           temp = new Window(i*width+j, leftmost+j*_omega, lowmost+i*_omega, leftmost+(j+1)*_omega, lowmost+(i+1)*_omega);
+         _window.push_back(temp);
+
+      }
+   }
+   size_t numComp = _component.size();
+   size_t numWindow = _window.size();
+   for (size_t i=0;i<numComp;++i) {
+      int xl,yl,xr,yu;
+      _component[i]->range(xl,yl,xr,yu);
+      for (size_t j=0;j<numWindow;++j) {
+         if (_window[j]->overlap(xl,yl,xr,yu)) {
+            _window[j]->pushComponent(_component[i]);
+            _component[i]->pushWindow(_window[j]);
+         }
+      }
+   }
+   for (size_t i=0;i<numWindow;++i)
+      _window[i]->refreshShape();
 }
 
 void Graph::DFScoloring()
@@ -81,7 +165,6 @@ unsigned Graph::connect(Shape* s)
   if(_leftBound.empty()){return 0;}
 
    ShapeTable::iterator it_left_l = _leftBound.lower_bound(s->xright());
-  // cout <<it_left_l->first<<endl;
    ShapeTable::iterator it_left_u = _leftBound.upper_bound(s->xright()+_alpha);
 
    ShapeTable::iterator it_right_l = _rightBound.lower_bound(s->xleft()-_alpha);
@@ -98,13 +181,10 @@ unsigned Graph::connect(Shape* s)
    {
      if(it->second!=s && s->yupper()>it->second->ylower() && it->second->yupper()>s->ylower())
      {
-     // if(abs(s->xright()-it->first)<=_alpha)
-     // {
         s->connect(it->second);
         Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects ++;
-   //   }
      }
    }
 
@@ -112,13 +192,10 @@ unsigned Graph::connect(Shape* s)
    {
      if(it->second!=s && s->yupper()>it->second->ylower() && it->second->yupper()>s->ylower())
      {
-      // if(abs(s->xleft()-it->first)<=_alpha)
-      // {
         s->connect(it->second);
         Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects++;
-       // }
      }
    }
 
@@ -126,13 +203,10 @@ unsigned Graph::connect(Shape* s)
    {
      if(it->second!=s && s->xright()>it->second->xleft() && it->second->xright()>s->xleft())
      {
-     //  if(abs(s->ylower()-it->first)<=_beta)
-    //   {
         s->connect(it->second);
         Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects++;
-      // }
      }
    }
 
@@ -140,18 +214,61 @@ unsigned Graph::connect(Shape* s)
    {
      if(it->second!=s && s->xright()>it->second->xleft() && it->second->xright()>s->xleft())
      {
-    //   if((s->yupper()-it->first)<=_beta)
-     //  {
         s->connect(it->second);
         Edge* con=new Edge(s,it->second);
         _edge.push_back(con);
         _numofconnects++;
-       // }
      }
    }
    return _numofconnects;
 }
 
+void Graph::PrintOut(const char* filename)
+{
+  ofstream file;
+  file.open(filename,ios::trunc|ios::out);
+  for(int j=0;j<_window.size();j++)
+  {
+   int left=-1,right=-1,lower=-1,upper=-1;
+   _window[j]->getSides(left,right,lower,upper);
+   file << "WIN[" << j+1 <<"]=" ;
+   file << left <<','<< lower <<','<< right <<','<< upper <<'('<< 1.11<<' '<< 1.11<<')'<<endl;
+  }
+  file.close();
+  for(int i=0;i<_component.size();i++)
+  {
+   _component[i]->printGroup(filename);
+  }
+}
+
+void Graph::colorBalance()
+{
+   size_t numWindow = _window.size();
+   int maxWinId, maxWinDiff=0;
+   for (size_t i=0;i<numWindow;++i) {
+      if (abs(_window[i]->colorDiff()) > maxWinDiff && !_window[i]->adjusted()) {
+         maxWinId = i;
+         maxWinDiff = abs(_window[i]->colorDiff());
+      }
+   }
+   _window[maxWinId]->adjust();
+}
+
+Component::Component(vector<Shape*> temp) :
+   _shape(temp), _xl(INT_MAX), _xr(INT_MIN), _yl(INT_MAX), _yu(INT_MIN)
+{
+   size_t n = _shape.size();
+   for (size_t i=0;i<n;++i) {
+      if (_shape[i]->xleft() < _xl)
+         _xl = _shape[i]->xleft();
+      if (_shape[i]->xright() > _xr)
+         _xr = _shape[i]->xright();
+      if (_shape[i]->ylower() < _yl)
+         _yl = _shape[i]->ylower();
+      if (_shape[i]->yupper() > _yu)
+         _yu = _shape[i]->yupper();
+   }
+}
 void Component::coloring(bool violate){
    if (violate){
       vector<Shape*>::iterator it = _shape.begin();
@@ -161,6 +278,67 @@ void Component::coloring(bool violate){
    }
    else
       _shape[0]->docolor(1);
+}
+
+void Component::inverse()
+{
+   size_t n = _shape.size();
+   for (size_t i=0;i<n;++i)
+      _shape[i]->inverse();
+   n = _window.size();
+   for (size_t i=0;i<n;++i)
+      _window[i]->calculateDiff();
+}
+void Component::printGroup(const char* filename)
+{
+  ofstream ret;
+  ret.open(filename,ios::out|ios::app);
+  ret << "GROUP" <<endl;
+  int a_order=1;
+  int b_order=1;
+  int c_order=1;
+  for(int i=_shape.size()-1;i>-1;i--)
+  {
+    if(_shape[i]->color()==3)
+    {
+     ret << "NO[" << c_order << "]=" << _shape[i]->xleft()<<','<<_shape[i]->ylower()<<','
+                                <<_shape[i]->xright()<<','<<_shape[i]->yupper()<<endl;
+     c_order++;
+    }
+    if(_shape[i]->color()==1)
+    {
+     ret << "CA[" << a_order << "]=" << _shape[i]->xleft()<<','<<_shape[i]->ylower()<<','
+                                <<_shape[i]->xright()<<','<<_shape[i]->yupper()<<endl;
+     a_order++;
+    }
+  }
+  for(int j=_shape.size()-1;j>-1;j--)
+  {
+    if(_shape[j]->color()==2)
+    {
+     ret << "CB[" << b_order << "]=" << _shape[j]->xleft()<<','<<_shape[j]->ylower()<<','
+                                <<_shape[j]->xright()<<','<<_shape[j]->yupper()<<endl;
+      b_order++;
+    }
+  }
+  ret.close();
+}
+bool Component::colorable()
+{
+   return (_shape[0]->color() != UNCOLORABLE);
+}
+
+void Component::range(int& xl, int& yl, int& xr, int& yu)
+{
+   xl = _xl;
+   xr = _xr;
+   yl = _yl;
+   yu = _yu;
+}
+
+void Component::pushWindow(Window* window)
+{
+   _window.push_back(window);
 }
 
 Edge::Edge(Shape* s1, Shape* s2)
@@ -180,3 +358,67 @@ bool Edge::operator< (const Edge& e) const
       return this->_s[1]->id() < e._s[1]->id();
 }
 
+Window::Window(unsigned id, int xl, int yl, int xr, int yu) :
+   _id(id), _xl(xl), _xr(xr), _yl(yl), _yu(yu), _colorDiff(INT_MIN), _adjusted(false)
+{}
+
+bool Window::overlap(int xl, int yl, int xr, int yu)
+{
+   #define inRange(x,l,u)  \
+   x>=l && x<=u
+   if (inRange(this->_xl,xl,xr))
+      return true;
+   if (inRange(this->_xr,xl,xr))
+      return true;
+   if (inRange(this->_yl,yl,yu))
+      return true;
+   if (inRange(this->_yu,yl,yu))
+      return true;
+   return false;
+}
+
+void Window::pushComponent(Component* comp)
+{
+   _component.push_back(comp);
+}
+
+void Window::refreshShape()
+{
+   size_t numComp = _component.size();
+   for (size_t i=0;i<numComp;++i) {
+      size_t numShape = _component[i]->_shape.size();
+      for (size_t j=0;j<numShape;++j) {
+         Shape* p = _component[i]->_shape[j];
+         int area = p->overlapArea(_xl,_yl,_xr,_yu);
+         if (area > 0) {
+            _shape.push_back(p);
+            _area.push_back(area);
+         }
+      }
+   }
+}
+int Window::calculateDiff()
+{
+   int RedArea=0, BlueArea=0;
+   size_t n = _shape.size();
+   for (size_t i=0;i<n;++i) {
+      switch(_shape[i]->color()) {
+       case RED:
+         RedArea += _area[i];
+         break;
+       case BLUE:
+         BlueArea += _area[i];
+         break;
+       default:
+         fprintf(stderr, "At Window %u, an uncolorable shape %u found\n", _id, _shape[i]->id());
+         assert(0);
+      }
+   }
+   _colorDiff = BlueArea - RedArea;
+   return _colorDiff;
+}
+
+void Window::adjust()
+{
+
+}
