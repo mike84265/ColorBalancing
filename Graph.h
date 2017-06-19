@@ -50,7 +50,7 @@ public:
    void range(int& xl, int& yl, int& xr, int& yu);
    void pushWindow(Window* window);
    friend class Window;
-   void printGroup(const char* filename);
+   void printGroup(FILE* file);
 private:
    vector<Shape*>                   _shape;
    vector<Window*>                  _window;

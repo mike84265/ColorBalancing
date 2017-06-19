@@ -38,7 +38,6 @@ int Graph::read(const char* filename)
    while (fscanf(fin,"%d,%d,%d,%d\n",&x1, &y1, &x2, &y2) == 4) {
       Shape* s = new Shape(id,x1,x2,y1,y2);
       ++id;
-     // connect(s);
       _shape.push_back(s);
       _leftBound.insert(pair<int,Shape*>(x1,s));
       _rightBound.insert(pair<int,Shape*>(x2,s));
@@ -236,20 +235,16 @@ unsigned Graph::connect(Shape* s)
 
 void Graph::PrintOut(const char* filename)
 {
-   ofstream file;
-   file.open(filename,ios::trunc|ios::out);
+   FILE* f = fopen(filename,"w");
    for(int j=0;j<_window.size();j++)
    {
       int left=-1,right=-1,lower=-1,upper=-1;
       _window[j]->getSides(left,right,lower,upper);
-      file << "WIN[" << j+1 <<"]=" ;
-      file << left <<','<< lower <<','<< right <<','<< upper <<'('<< 1.11<<' '<< 1.11<<')'<<endl;
+      fprintf(f,"WIN[%d]=%d,%d,%d,%d(1.11 1.11)",j+1,left,lower,right,upper);
    }
-   file.close();
    for(int i=0;i<_component.size();i++)
-   {
-      _component[i]->printGroup(filename);
-   }
+      _component[i]->printGroup(f);
+   fclose(f);
 }
 
 void Graph::colorBalance()
@@ -301,39 +296,30 @@ void Component::inverse()
    for (size_t i=0;i<n;++i)
       _window[i]->calculateDiff();
 }
-void Component::printGroup(const char* filename)
+void Component::printGroup(FILE* file)
 {
-   ofstream ret;
-   ret.open(filename,ios::out|ios::app);
-   ret << "GROUP" <<endl;
+   fprintf(file,"GROUP\n");
    int a_order=1;
    int b_order=1;
    int c_order=1;
-   for(int i=_shape.size()-1;i>-1;i--)
-   {
-      if(_shape[i]->color()==3)
-      {
-         ret << "NO[" << c_order << "]=" << _shape[i]->xleft()<<','<<_shape[i]->ylower()<<','
-                                    <<_shape[i]->xright()<<','<<_shape[i]->yupper()<<endl;
-         c_order++;
-      }
-      if(_shape[i]->color()==1)
-      {
-         ret << "CA[" << a_order << "]=" << _shape[i]->xleft()<<','<<_shape[i]->ylower()<<','
-                                    <<_shape[i]->xright()<<','<<_shape[i]->yupper()<<endl;
-         a_order++;
+   for (size_t i=_shape.size()-1;i>-1;--i) {
+      switch(_shape[i]->color()) {
+       case UNCOLORABLE:
+         fprintf(file, "NO[%d]=%d,%d,%d,%d\n", c_order++, _shape[i]->xleft(), _shape[i]->ylower(), 
+            _shape[i]->xright(), _shape[i]->yupper());
+         break;
+       case RED:
+         fprintf(file, "CA[%d]=%d,%d,%d,%d\n", a_order++, _shape[i]->xleft(), _shape[i]->ylower(), 
+            _shape[i]->xright(), _shape[i]->yupper());
+         break;
+       case BLUE:
+         fprintf(file, "CB[%d]=%d,%d,%d,%d\n", b_order++, _shape[i]->xleft(), _shape[i]->ylower(), 
+            _shape[i]->xright(), _shape[i]->yupper());
+         break;
+       default:
+         break;
       }
    }
-   for(int j=_shape.size()-1;j>-1;j--)
-   {
-     if(_shape[j]->color()==2)
-     {
-        ret << "CB[" << b_order << "]=" << _shape[j]->xleft()<<','<<_shape[j]->ylower()<<','
-                                   <<_shape[j]->xright()<<','<<_shape[j]->yupper()<<endl;
-        b_order++;
-     }
-   }
-   ret.close();
 }
 bool Component::colorable()
 {
