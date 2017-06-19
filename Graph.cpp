@@ -1,6 +1,5 @@
 #include "Graph.h"
 #include <fstream>
-#include "iomanip"
 unsigned Graph::_globalref = 0;
 
 Graph::~Graph()
@@ -244,8 +243,8 @@ void Graph::PrintOut(const char* filename)
       int left=-1,right=-1,lower=-1,upper=-1;
       _window[j]->calculateDiff();
 
-      double redratio=(double)(_window[j]->getArea(RED)*100)/(_omega*_omega);
-      double blueratio=(double)(_window[j]->getArea(BLUE)*100)/(_omega*_omega);
+      double redratio=(_window[j]->getArea(RED)*100)/(_omega*_omega);
+      double blueratio=(_window[j]->getArea(BLUE)*100)/(_omega*_omega);
       _window[j]->getSides(left,right,lower,upper);
       fprintf(f,"WIN[%d]=%d,%d,%d,%d(%.2f %.2f)\n",j+1,left,lower,right,upper,redratio,blueratio);
    }
@@ -257,18 +256,22 @@ void Graph::PrintOut(const char* filename)
 void Graph::colorBalance()
 {
    size_t numWindow = _window.size();
-   int maxWinId, maxWinDiff=0;
-   for (size_t i=0;i<numWindow;++i) {
-      #if DEBUG==1
-      printf("window[%d] colorDiff = %d\n", i, _window[i]->colorDiff());
-      #endif
-      if (abs(_window[i]->colorDiff()) > maxWinDiff && !_window[i]->adjusted()) {
-         maxWinId = i;
-         maxWinDiff = abs(_window[i]->colorDiff());
+   int maxWinId, maxWinDiff=0, numAdjusted=0;
+   while(numAdjusted < numWindow) {
+      maxWinDiff = 0;
+      for (size_t i=0;i<numWindow;++i) {
+         #if DEBUG==1
+         printf("window[%d] colorDiff = %d\n", i, _window[i]->colorDiff());
+         #endif
+         if (abs(_window[i]->colorDiff()) > maxWinDiff && !_window[i]->adjusted()) {
+            maxWinId = i;
+            maxWinDiff = abs(_window[i]->colorDiff());
+         }
       }
+      if (maxWinDiff != 0)
+         _window[maxWinId]->adjust();
+      ++numAdjusted;
    }
-   if (maxWinDiff != 0)
-      _window[maxWinId]->adjust();
 }
 
 Component::Component(vector<Shape*> temp) :
@@ -441,6 +444,10 @@ int Window::getArea(int index){
 
 void Window::adjust()
 {
+   #if DEBUG==2
+   printf("Adjusting window %d ...\n",_id);
+   fflush(stdout);
+   #endif
    size_t n = _shape.size();
    map<Component*,int> componentArea;
    map<Component*,int>::iterator it;
@@ -450,9 +457,6 @@ void Window::adjust()
       componentArea[_shape[i]->getComp()] += (sign * _area[i]);
    }
    Component* bestSol = NULL;
-   #if DEBUG==1
-   printf("componentArea.size() = %zu\n",componentArea.size());
-   #endif
    int bestArea = 0;
    for (it=componentArea.begin(); it!=componentArea.end(); ++it) {
       #if DEBUG==1

@@ -1,5 +1,5 @@
 CFLAGS = -std=c++11 -Wall -O3
-CFLAGS_DBG = -std=c++11 -g -Wall -DDEBUG=1
+CFLAGS_DBG = -std=c++11 -g -Wall -DDEBUG=2
 
 main:
 	@make Shape.o
