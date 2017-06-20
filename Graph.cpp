@@ -43,7 +43,7 @@ int Graph::read(const char* filename)
       _upperBound.insert(pair<int,Shape*>(y2,s));
       _lowerBound.insert(pair<int,Shape*>(y1,s));
    }
-   for(int i=0;i<_shape.size();i++)
+   for(size_t i=0;i<_shape.size();i++)
       connect(_shape[i]);
 
    fclose(fin);
@@ -237,7 +237,7 @@ unsigned Graph::connect(Shape* s)
 void Graph::PrintOut(const char* filename)
 {
    FILE* f = fopen(filename,"w");
-   for(int j=0;j<_window.size();j++)
+   for(size_t j=0;j<_window.size();j++)
    {
 
       int left=-1,right=-1,lower=-1,upper=-1;
@@ -246,17 +246,17 @@ void Graph::PrintOut(const char* filename)
       double redratio=(double)(_window[j]->getArea(RED)*100)/(_omega*_omega);
       double blueratio=(double)(_window[j]->getArea(BLUE)*100)/(_omega*_omega);
       _window[j]->getSides(left,right,lower,upper);
-      fprintf(f,"WIN[%d]=%d,%d,%d,%d(%.2f %.2f)\n",j+1,left,lower,right,upper,redratio,blueratio);
+      fprintf(f,"WIN[%zu]=%d,%d,%d,%d(%.2f %.2f)\n",j+1,left,lower,right,upper,redratio,blueratio);
    }
-   for(int i=0;i<_component.size();i++)
+   for(size_t i=0;i<_component.size();i++)
       _component[i]->printGroup(f);
    fclose(f);
 }
 
 void Graph::colorBalance()
 {
-   size_t numWindow = _window.size();
-   int maxWinId, maxWinDiff=0, numAdjusted=0;
+   size_t numAdjusted = 0, numWindow = _window.size();
+   int maxWinId, maxWinDiff=0;
    while(numAdjusted < numWindow) {
       maxWinDiff = 0;
       for (size_t i=0;i<numWindow;++i) {
@@ -372,7 +372,7 @@ bool Edge::operator< (const Edge& e) const
 
 Window::Window(unsigned id, int xl, int yl, int xr, int yu) :
    _id(id), _xl(xl), _xr(xr), _yl(yl), _yu(yu),
-   _colorDiff(INT_MIN), _adjusted(false), _redarea(0), _bluearea(0)
+   _colorDiff(INT_MIN), _redarea(0), _bluearea(0), _adjusted(false)
 {}
 
 bool Window::overlap(int xl, int yl, int xr, int yu)
